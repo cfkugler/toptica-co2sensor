@@ -355,5 +355,17 @@ void eeprom_load(){
 }
 
 
+void eeprom_check(){
+    // Check for valid crc
+    // Reset EEPROM to default configuration values + crc if crc mismatches 
+    unsigned long crcTemp; 
+    if (EEPROM.get(EEPROM.length()-4, crcTemp) != eeprom_crc()){
+        Serial.println("EEPROM not matching last saved crc value - setting defaults");
+        // default settings can be changed as default crc is actively calculated
+        eeprom_reset();
+    }
+}
+
+
     delay(500);
 }
