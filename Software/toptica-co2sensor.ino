@@ -207,5 +207,13 @@ void loop() {
         saveScreen();
     }
 
+    // Back Button and exit from menu without saving
+    if (btn == BUTTON_2_PRESSED && menuMode && menuPage!=0){
+        // reset optionSelected and menuPage
+        resetMenu(true, 0);
+    }else if (btn == BUTTON_2_PRESSED && menuMode && menuPage==0){
+        resetMenu(false, -1);
+    }
+    
     delay(500);
 }
