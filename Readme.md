@@ -9,6 +9,13 @@ We wish you good luck with your work and are happy to receive a picture of your 
 
 Your TOPTICA team
 
+# Remarks concerning the added menu and eeprom functionality
+
+* Tested on Arduino UNO with TOPTICA CO2 Sensor Shield with SCD30 sensor and Multi-Function-Shield
+
+* See documentation in /Software/documentation/menu_and_function_description.pdf
+
+* Have fun!
 
 # Hardware installation guide
 For detailed assembly instructions please refere to [``AssemblyManual.PDF``](./Hardware/AssemblyManual.PDF)
