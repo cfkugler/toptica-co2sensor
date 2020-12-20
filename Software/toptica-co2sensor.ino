@@ -293,5 +293,21 @@ void loop() {
             delay(25);
         }
     
+    // co2 alarm section
+    if(co2Value >= threshold && !menuMode && newReading){
+        newReading = false;
+        MFS.writeLeds(LED_ALL, ON);
+        MFS.blinkLeds(LED_ALL, ON);
+        Serial.println((String)"Alarm activated: co2 value above threshold: " + co2Value + " > " + threshold);
+        if (beepMode){
+            MFS.beep();
+        }      
+    }else if (co2Value <= threshold && !menuMode && newReading){
+        newReading = false;
+        MFS.writeLeds(LED_ALL, OFF);
+    }
+}
+
+
     delay(500);
 }
