@@ -199,5 +199,13 @@ void loop() {
             resetMenu(false, -1);
     }
 
+    // Reset to defaults Button
+    // use long release here because of non-perfect debouncing in LONG_PRESSED
+    if (btn == BUTTON_2_LONG_RELEASE){
+        eeprom_reset();
+        loadScreen();
+        saveScreen();
+    }
+
     delay(500);
 }
