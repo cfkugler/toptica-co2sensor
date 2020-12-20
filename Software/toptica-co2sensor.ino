@@ -55,6 +55,14 @@ void setup() {
         MFS.blinkLeds(LED_ALL, ON);
         MFS.write("ERR");
         delay(5000);
+    }else{
+        // SCD30 set measurement interval in s
+        airSensor.setMeasurementInterval(2);  
+    
+        // Check EEPROM against stored crc value, load default if needed and set variables
+        eeprom_check();    
+        eeprom_load();
+    }   
 }
 
 
