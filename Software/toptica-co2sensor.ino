@@ -39,21 +39,14 @@ void setup() {
     // Setup serial port
     int baudrate = 9600;
     Serial.begin(baudrate);
-
+   
     // Initialize Wire and MFS
     Wire.begin();    
     MFS.initialize();
 
-    // Write TOPTICA to MFS
-    MFS.beep();
-    MFS.write("top");
-    delay(1500);
-    MFS.write("tica");
-    delay(1500);
-    MFS.write("C02");
-    delay(2000);
-    MFS.beep();
-
+    // show TOPTICA boot animation on display and send to serial
+    topticaSplash();
+    
     // Check for errors in the initialisation
     if (airSensor.begin() == false) {
         Serial.println("Error. SCD30 not detected. Please check the Connection."
