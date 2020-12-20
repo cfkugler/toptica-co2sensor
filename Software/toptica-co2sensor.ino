@@ -340,5 +340,20 @@ void resetMenu(int mMode, int optSel){
 }
 
 
+void eeprom_load(){
+    // load stored EEPROM values
+    displayMode = EEPROM.read(0);
+    beepMode = EEPROM.read(1);
+    threshold = (EEPROM.read(2) + 1) * 250;
+    temperatureOffset = EEPROM.read(3);
+    // Set sensor temperature offset to compensate for self heating
+    airSensor.setTemperatureOffset(temperatureOffset);
+    altMulti = EEPROM.read(4);
+    altValue = EEPROM.get(5, altValue);
+    // Set sensor altitude compensation
+    airSensor.setAltitudeCompensation(altValue);
+}
+
+
     delay(500);
 }
