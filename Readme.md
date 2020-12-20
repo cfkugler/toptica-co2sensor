@@ -15,6 +15,10 @@ Your TOPTICA team
 
 * See documentation in /Software/documentation/menu_and_function_description.pdf
 
+* Short video of functionality
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/F2p6WgKKBT8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 * Have fun!
 
 # Hardware installation guide
