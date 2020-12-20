@@ -441,4 +441,23 @@ void topticaSplash(void){
     MFS.beep();
 }
 
+
+void saveScreen(void){
+    MFS.write("SAUE");
+    delay(500);
+    MFS.write("");
+    delay(500);
+    MFS.write("SAUE");
+    delay(500);
+}
+
+void loadScreen(void){
+    MFS.write("o---");
+    delay(125);
+    MFS.write("-o--");
+    delay(125);
+    MFS.write("--o-");
+    delay(125);
+    MFS.write("---o");
+    delay(125);  
 }
