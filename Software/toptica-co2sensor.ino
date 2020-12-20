@@ -397,4 +397,34 @@ void eeprom_reset(void){
 }
 
 
+void forcedCalibration(int cal, byte btn){
+    // Routine for forced sensor calibration
+    // uses analog read of MFS potentiometer to set co2 cal value
+    // waits 3 minutes (blinks MFS 7 segment) and then forces calibration
+   
+    Serial.println("Start sensor forced recalibration routine - 3 Minutes settling time");
+    int i;
+    bool abort = false;
+    for (i=0; i<180; i++){
+        // one MFS 7 segment Blinking takes ~1s
+        MFS.write("CAL");
+        delay(500);
+        MFS.write("");
+        delay(500);
+        if (!digitalRead(A2) && menuMode){
+            resetMenu(false, 0);
+            abort = true;
+            break;
+        }
+    }
+    if (!abort){
+        // Force recalibration with chosen co2 cal value
+        airSensor.setForcedRecalibrationFactor(cal);
+        Serial.println("Sensor forced recalibration done");
+    }else{
+        Serial.println("Sensor recalibration aborted");
+    }
+
+}
+
 }
