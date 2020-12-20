@@ -387,4 +387,14 @@ void eeprom_reset(void){
     delay(1000);
     MFS.write("----");
     delay(500);
+    EEPROM.update(0, 0);                                      // set displayMode to co2
+    EEPROM.update(1, 1);                                      // set beepMode to on
+    EEPROM.update(2, 3);                                      // set co2 threshold to 1000 ppm
+    EEPROM.update(3, 0);                                      // set temperature offset to 0
+    EEPROM.update(4, 1);                                      // set altMulti to 1
+    EEPROM.put(5, 500);                                       // set altValue to 500
+    EEPROM.put(EEPROM.length()-4, eeprom_crc());              // put default crc to EEPROM
+}
+
+
 }
