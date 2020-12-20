@@ -329,5 +329,16 @@ unsigned long eeprom_crc(void){
 }
 
 
+void resetMenu(int mMode, int optSel){
+    // reset optionSelected, menuPage and deactivate menuMode
+    optionSelected = optSel;
+    menuNeedsPrint = true;
+    menuMode = mMode;
+    menuPage = 0;
+    MFS.write("----");
+    delay(250);
+}
+
+
     delay(500);
 }
