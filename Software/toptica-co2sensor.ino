@@ -137,5 +137,58 @@ void loop() {
         menuNeedsPrint = true;
     }
 
+    // Select and Apply Action
+    if (btn == BUTTON_3_PRESSED){
+        if (menuMode && menuPage == 0){
+            if (menuOptions[optionSelected] == "disp"){
+                // select menuPage 1 and show current value
+                menuPage = 1;
+                optionSelected = displayMode;
+            }else if (menuOptions[optionSelected] == "beep"){
+                // select menuPage 1 and show current value
+                menuPage = 2;
+                optionSelected = beepMode;
+            }else if (menuOptions[optionSelected] == "thre"){
+                // select menuPage 1 and show current value
+                menuPage = 3;
+                optionSelected = threshold/250-1;
+            }else if (menuOptions[optionSelected] == "tc"){
+                // select menuPage 1 and show current value
+                menuPage = 4;
+                optionSelected = temperatureOffset;
+            }else if (menuOptions[optionSelected] == "alt"){
+                menuPage = 5;
+            }else if (menuOptions[optionSelected] =="cal"){
+                MFS.write("set");
+                delay(500);
+                MFS.write("co2");
+                delay(500);
+                MFS.write("cal");
+                delay(500);
+                menuPage = 6;
+            }
+        menuNeedsPrint = true;
+        }else if (menuMode && menuPage != 0){
+            if (menuPage == 1){
+                displayMode = optionSelected;
+            }else if (menuPage == 2){
+                beepMode = optionSelected;
+            }else if (menuPage == 3){
+                threshold = (optionSelected + 1) * 250;
+            }else if (menuPage == 4){
+                temperatureOffset = optionSelected;
+                airSensor.setTemperatureOffset(temperatureOffset);        // Set temperature offset to compensate for self heating
+            }else if (menuPage == 5){
+                altValue = analogRead(POT_PIN)*altMulti;
+                airSensor.setAltitudeCompensation(analogRead(POT_PIN)*altMulti);
+            }else if (menuPage == 6){
+                // Start forced calibration routine
+                forcedCalibration(analogRead(POT_PIN), btn);
+            }            
+            resetMenu(false, -1);
+            loadScreen();
+        }
+    }
+    
     delay(500);
 }
