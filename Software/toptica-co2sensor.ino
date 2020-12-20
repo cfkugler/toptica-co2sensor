@@ -51,7 +51,10 @@ void setup() {
     if (airSensor.begin() == false) {
         Serial.println("Error. SCD30 not detected. Please check the Connection."
             "Press RESET to proceed.");
-    }
+        MFS.writeLeds(LED_ALL, ON);
+        MFS.blinkLeds(LED_ALL, ON);
+        MFS.write("ERR");
+        delay(5000);
 }
 
 
