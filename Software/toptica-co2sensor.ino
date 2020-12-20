@@ -247,5 +247,51 @@ void loop() {
             resetMenu(false, -1);  
         }
     }
+
+
+
+    // Display Modes
+    if (airSensor.dataAvailable() && !menuMode) {
+            newReading = true;
+            switch(displayMode){
+                case 0:
+                    co2Value = airSensor.getCO2();
+                    MFS.write(co2Value);
+                    Serial.println((String)"CO2(ppm): " + co2Value);
+                    break;
+                case 1:
+                    tempValue = airSensor.getTemperature();
+                    MFS.write(tempValue);
+                    Serial.println((String)"Temperature (C): " + tempValue);
+                    break;
+                case 2:
+                    humValue = airSensor.getHumidity();
+                    MFS.write(humValue);
+                    Serial.println((String)"rel. Humidity (%): " + humValue);
+                    break;
+                case 3:
+                    // cycle time is given by measurement time
+                    co2Value = airSensor.getCO2();
+                    tempValue = airSensor.getTemperature();
+                    humValue = airSensor.getHumidity();
+                    Serial.println((String)"CO2 (ppm): " + co2Value);
+                    Serial.println((String)"Temperature (C): " + tempValue);
+                    Serial.println((String)"rel. Humidity (%): " + humValue);
+                    if ((cycle % 3) == 0){
+                        MFS.write(co2Value); 
+                    }else if ((cycle % 3) == 1){
+                        MFS.write(tempValue);
+                    }else if ((cycle % 3) == 2){
+                        MFS.write(humValue);
+                    }
+                    cycle++;
+                    break;
+                default:
+                    break;        
+              }
+        }else{
+            delay(25);
+        }
+    
     delay(500);
 }
