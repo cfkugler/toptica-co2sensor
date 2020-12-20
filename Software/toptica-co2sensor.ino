@@ -367,5 +367,16 @@ void eeprom_check(){
 }
 
 
+void eeprom_update(void){
+    // update all configuration values + crc
+    EEPROM.update(0, displayMode);
+    EEPROM.update(1, beepMode);
+    EEPROM.update(2, threshold/250-1);
+    EEPROM.update(3, temperatureOffset);
+    EEPROM.update(4, altMulti);
+    EEPROM.put(5, altValue);
+    EEPROM.put(EEPROM.length()-4, eeprom_crc());
+}
+
     delay(500);
 }
