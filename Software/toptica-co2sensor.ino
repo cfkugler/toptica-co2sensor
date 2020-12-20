@@ -190,5 +190,14 @@ void loop() {
         }
     }
     
+    // Save Button
+    // use long release here because of non-perfect debouncing in LONG_PRESSED
+    if (btn == BUTTON_3_LONG_RELEASE){
+            eeprom_update();
+            loadScreen();
+            saveScreen();
+            resetMenu(false, -1);
+    }
+
     delay(500);
 }
