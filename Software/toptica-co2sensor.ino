@@ -427,4 +427,18 @@ void forcedCalibration(int cal, byte btn){
 
 }
 
+
+void topticaSplash(void){
+    // Write TOPTICA to MFS
+    Serial.println("TOPTICA CO2 Sensor Shield");
+    MFS.beep();
+    MFS.write("top");
+    delay(1500);
+    MFS.write("tica");
+    delay(1500);
+    MFS.write("C02");
+    delay(2000);
+    MFS.beep();
+}
+
 }
