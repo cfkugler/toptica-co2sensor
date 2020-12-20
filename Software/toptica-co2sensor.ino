@@ -215,5 +215,37 @@ void loop() {
         resetMenu(false, -1);
     }
     
+    // Print menuPage element to display
+    static uint32_t timer;
+    if (menuMode && menuNeedsPrint){
+        timer = millis();
+        if (menuPage == 0){
+            MFS.write(menuOptions[optionSelected]);
+        }else if (menuPage == 1){
+            MFS.write(menuDisp[optionSelected]);
+        }else if (menuPage == 2){
+            MFS.write(menuBeep[optionSelected]);
+        }else if (menuPage == 3){
+            MFS.write(menuThre[optionSelected]);
+        }else if (menuPage == 4){
+            MFS.write(menuTc[optionSelected]);
+        }else if (menuPage == 5){
+            MFS.write(analogRead(POT_PIN)*altMulti);
+        }else if (menuPage == 6){
+            MFS.write(analogRead(POT_PIN));
+        }
+        menuNeedsPrint = false;
+        if (menuPage == 5){
+            menuNeedsPrint = true;
+            delay(250);
+        }else if (menuPage == 6){
+            menuNeedsPrint = true;
+            delay(250);
+        }
+    }else if (menuMode && !menuNeedsPrint){
+        if ((millis() - timer) > 5000){
+            resetMenu(false, -1);  
+        }
+    }
     delay(500);
 }
