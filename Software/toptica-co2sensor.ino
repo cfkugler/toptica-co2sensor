@@ -378,5 +378,13 @@ void eeprom_update(void){
     EEPROM.put(EEPROM.length()-4, eeprom_crc());
 }
 
+void eeprom_reset(void){
+    // resetting EEPROM to default configuration values + crc
+    Serial.println("Resetting EEPROM to defaults");
+    MFS.write("----");
+    delay(500);
+    MFS.write("RST");
+    delay(1000);
+    MFS.write("----");
     delay(500);
 }
