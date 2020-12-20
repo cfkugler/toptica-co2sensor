@@ -67,17 +67,74 @@ void setup() {
 
 
 void loop() {
-    if (airSensor.dataAvailable()) {
-        // Get the data from the sensor
-        co2Value = airSensor.getCO2();
+    // Initialize MFS buttons
+    byte btn = MFS.getButton();
 
-        // Write it to the MFS and on serial port
-        MFS.write(co2Value);
-        Serial.println(co2Value);
+    // Menu Button    
+    if (btn == BUTTON_1_PRESSED && !menuMode){
+        menuMode = true;
+        //Serial.println("Menu activated");
+        menuNeedsPrint = true;
     }
 
-    if(co2Value >= threshold){
-        MFS.beep();
+    if (btn == BUTTON_1_PRESSED && menuMode){
+        switch(menuPage){
+            case 0:
+                if (optionSelected < menuOptionElements-1){
+                    // select next menu item
+                    optionSelected++;
+                }else{
+                    // end of menu array reached. go back to start
+                    optionSelected = 0;
+                }
+                break;
+            case 1:
+                if (optionSelected < menuDispElements-1){
+                    // select next menu item
+                    optionSelected++;
+                }else{
+                    // end of menu array reached. go back to start
+                    optionSelected = 0;
+                }
+                break;
+            case 2:
+                if (optionSelected < menuBeepElements-1){
+                    // select next menu item
+                    optionSelected++;
+                }else{
+                    // end of menu array reached. go back to start
+                    optionSelected = 0;
+                }
+                break;
+            case 3:
+                if (optionSelected < menuThreElements-1){
+                    // select next menu item
+                    optionSelected++;
+                }else{
+                    // end of menu array reached. go back to start
+                    optionSelected = 0;
+                }
+                break;
+            case 4:
+                if (optionSelected < menuTcElements-1){
+                    // select next menu item
+                    optionSelected++;
+                }else{
+                    // end of menu array reached. go back to start
+                    optionSelected = 0;
+                }
+                break;
+            case 5:
+                if (altMulti <= 10){
+                    altMulti++;
+                }else{
+                    altMulti = 1;
+                }
+                break;
+            default:
+                break;
+        }
+        menuNeedsPrint = true;
     }
 
     delay(500);
