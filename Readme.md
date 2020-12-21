@@ -13,7 +13,7 @@ Your TOPTICA team
 
 * Tested on Arduino UNO with TOPTICA CO2 Sensor Shield with SCD30 sensor and Multi-Function-Shield
 
-* See documentation in /Software/documentation/menu_and_function_description.pdf
+* See documentation [``menu_and_function_description.pdf``](./Software/documentation/menu_and_function_description.pdf)
 
 * Short video of functionality
 
