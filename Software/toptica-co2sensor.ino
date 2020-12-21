@@ -323,7 +323,7 @@ unsigned long eeprom_crc(void){
     
     // Calculate crc only from first X Bytes of EEPROM
     // change the index value if more or less parameters shoudl be saved
-    for (int index = 0 ; index < 6  ; ++index) {
+    for (int index = 0 ; index <= 6  ; ++index) {
       crc = crc_table[(crc ^ EEPROM[index]) & 0x0f] ^ (crc >> 4);
       crc = crc_table[(crc ^ (EEPROM[index] >> 4)) & 0x0f] ^ (crc >> 4);
       crc = ~crc;
