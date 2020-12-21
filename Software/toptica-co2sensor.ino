@@ -5,7 +5,7 @@
 
 
 SCD30         airSensor;                  // Object to interface with sensor
-int           co2Value = 0;               // Sensor read-out value CO2
+short         co2Value = 0;               // Sensor read-out value CO2
 float         tempValue = 0.0;            // Sensor read-out value Temperature (C)
 float         humValue = 0.0;             // Sensor read-out value rel. Hum (%)
 short         threshold;                  // co2 Threshold value
@@ -37,7 +37,7 @@ byte          cycle = 0;
 
 void setup() {
     // Setup serial port
-    int baudrate = 9600;
+    short baudrate = 9600;
     Serial.begin(baudrate);
    
     // Initialize Wire and MFS
@@ -330,7 +330,7 @@ unsigned long eeprom_crc(void){
 }
 
 
-void resetMenu(int mMode, int optSel){
+void resetMenu(bool mMode, byte optSel){
     // reset optionSelected, menuPage and deactivate menuMode
     optionSelected = optSel;
     menuNeedsPrint = true;
