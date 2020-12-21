@@ -203,6 +203,7 @@ void loop() {
     // use long release here because of non-perfect debouncing in LONG_PRESSED
     if (btn == BUTTON_2_LONG_RELEASE){
         eeprom_reset();
+        eeprom_load();
         loadScreen();
         saveScreen();
     }
