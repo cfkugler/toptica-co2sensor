@@ -198,7 +198,7 @@ void loop() {
                 MFS.write(menuDisp[optionSelected]);
                 break;
             case 2:
-                MFS.write(menuOptions[optionSelected]);
+                MFS.write(menuBeep[optionSelected]);
                 break;
             case 3:
                 MFS.write(optionSelected*250);
