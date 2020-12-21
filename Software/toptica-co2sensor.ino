@@ -236,10 +236,7 @@ void loop() {
             MFS.write(analogRead(POT_PIN));
         }
         menuNeedsPrint = false;
-        if (menuPage == 5){
-            menuNeedsPrint = true;
-            delay(250);
-        }else if (menuPage == 6){
+        if ((menuPage == 5) || (menuPage == 6)){
             menuNeedsPrint = true;
             delay(250);
         }
