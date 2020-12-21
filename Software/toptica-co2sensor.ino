@@ -53,8 +53,10 @@ void setup() {
             "Press RESET to proceed.");
         MFS.writeLeds(LED_ALL, ON);
         MFS.blinkLeds(LED_ALL, ON);
+        MFS.blinkDisplay(15, 1);
         MFS.write("ERR");
         delay(5000);
+        MFS.blinkDisplay(15, 0);
     }else{
         // SCD30 set measurement interval in s
         airSensor.setMeasurementInterval(2);  
@@ -382,12 +384,10 @@ void eeprom_update(void){
 void eeprom_reset(void){
     // resetting EEPROM to default configuration values + crc
     Serial.println("Resetting EEPROM to defaults");
-    MFS.write("----");
-    delay(500);
+    MFS.blinkDisplay(15, 1);
     MFS.write("RST");
-    delay(1000);
-    MFS.write("----");
-    delay(500);
+    delay(2000);
+    MFS.blinkDisplay(15, 0);
     EEPROM.update(0, 0);                                      // set displayMode to co2
     EEPROM.update(1, 1);                                      // set beepMode to on
     EEPROM.update(2, 3);                                      // set co2 threshold to 1000 ppm
@@ -398,39 +398,29 @@ void eeprom_reset(void){
 }
 
 
-void forcedCalibration(int cal, byte btn){
+void forcedCalibration(short cal, byte btn){
     // Routine for forced sensor calibration
     // uses analog read of MFS potentiometer to set co2 cal value
     // waits 3 minutes (blinks MFS 7 segment) and then forces calibration
    
     Serial.println("Start sensor forced recalibration routine - 3 Minutes settling time");
     int i;
-    int j;
-    for (i=0; i<180; i++){
-        // one MFS 7 segment Blinking takes ~1s
-        for (j=8; j<16; j++){
-            // poll button more often by using shorter delay times
-            if ((j % 8) < 4){
-                MFS.write("CAL");
-                delay(125);
-            }else if (((j % 8) < 8) && ((j % 8) >= 4)){
-                MFS.write("");
-                delay(125);
-            }
-            if (!digitalRead(A2) && menuMode){
-            resetMenu(false, 0);
-            Serial.println("Sensor recalibration aborted");
-            return;
-            }
-            if (j == 15){
-                j=8;
-            }
+    for (i=0; i<1440; i++){
+        // one cylce takes ~0125.s
+        MFS.write("CAL");
+        MFS.blinkDisplay(15, 1);    
+                
+        if (!digitalRead(A2) && menuMode){
+        resetMenu(false, 0);
+        Serial.println("Sensor recalibration aborted");
+        MFS.blinkDisplay(15, 0);
+        return;
         }
-
     }
     // Force recalibration with chosen co2 cal value
     airSensor.setForcedRecalibrationFactor(cal);
     Serial.println("Sensor forced recalibration done");
+    MFS.blinkDisplay(15, 0);
 }
 
 
@@ -450,11 +440,9 @@ void topticaSplash(void){
 
 void saveScreen(void){
     MFS.write("SAUE");
-    delay(500);
-    MFS.write("");
-    delay(500);
-    MFS.write("SAUE");
-    delay(500);
+    MFS.blinkDisplay(15, 1);
+    delay(2000);
+    MFS.blinkDisplay(15, 0);
 }
 
 void loadScreen(void){
