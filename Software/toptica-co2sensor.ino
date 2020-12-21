@@ -10,11 +10,6 @@ float         tempValue = 0.0;            // Sensor read-out value Temperature (
 float         humValue = 0.0;             // Sensor read-out value rel. Hum (%)
 short         threshold;                  // co2 Threshold value
 byte          temperatureOffset;          // temperature offset of SCD30 sensor
-byte          displayMode;                // Display mode
-bool          beepMode;                   // co2 beep alarm if over threshold
-bool          newReading;                 // only do actions if new sensor reading is ready
-byte          altMulti = 1;               // altitude multiplikator for scaling
-short         altValue;                   // altitude value
 
 
 // variables and constants needed for menu
@@ -29,6 +24,11 @@ bool          menuNeedsPrint = false;
 byte          menuPage = 0;
 char          optionSelected = -1;
 byte          cycle = 0;
+byte          displayMode;                // Display mode
+bool          beepMode;                   // co2 beep alarm if over threshold
+bool          newReading;                 // only do actions if new sensor reading is ready
+byte          altMulti = 1;               // altitude multiplikator for scaling
+short         altValue;                   // altitude value
 
 
 void setup() {
@@ -66,172 +66,155 @@ void setup() {
 
 void loop() {
     // Initialize MFS buttons
-    byte btn = MFS.getButton();
-
-    // Menu Button    
-    if (btn == BUTTON_1_PRESSED && !menuMode){
-        menuMode = true;
-        //Serial.println("Menu activated");
-        menuNeedsPrint = true;
-    }
-
-    if (btn == BUTTON_1_PRESSED && menuMode){
-        switch(menuPage){
-            case 0:
-                if (optionSelected < menuOptionElements-1){
-                    // select next menu item
-                    optionSelected++;
-                }else{
-                    // end of menu array reached. go back to start
-                    optionSelected = 0;
-                }
-                break;
-            case 1:
-                if (optionSelected < menuDispElements-1){
-                    // select next menu item
-                    optionSelected++;
-                }else{
-                    // end of menu array reached. go back to start
-                    optionSelected = 0;
-                }
-                break;
-            case 2:
-                if (optionSelected < menuBeepElements-1){
-                    // select next menu item
-                    optionSelected++;
-                }else{
-                    // end of menu array reached. go back to start
-                    optionSelected = 0;
-                }
-                break;
-            case 3:
-                if (optionSelected <= 11){
-                    // select next menu item
-                    optionSelected++;
-                }else{
-                    // end of menu array reached. go back to start
-                    optionSelected = 1;
-                }
-                break;
-            case 4:
-                if (optionSelected < 15 ){
-                    // select next menu item
-                    optionSelected++;
-                }else{
-                    // end of menu array reached. go back to start
-                    optionSelected = 0;
-                }
-                break;
-            case 5:
-                if (altMulti <= 10){
-                    altMulti++;
-                }else{
-                    altMulti = 1;
-                }
-                break;
-            default:
-                break;
-        }
-        menuNeedsPrint = true;
-    }
-
-    // Select and Apply Action
-    if (btn == BUTTON_3_PRESSED){
-        if (menuMode && menuPage == 0){
-            if (menuOptions[optionSelected] == "disp"){
-                // select menuPage 1 and show current value
-                menuPage = 1;
-                optionSelected = displayMode;
-            }else if (menuOptions[optionSelected] == "beep"){
-                // select menuPage 1 and show current value
-                menuPage = 2;
-                optionSelected = beepMode;
-            }else if (menuOptions[optionSelected] == "thre"){
-                // select menuPage 1 and show current value
-                menuPage = 3;
-                optionSelected = threshold/250;
-            }else if (menuOptions[optionSelected] == "tc"){
-                // select menuPage 1 and show current value
-                menuPage = 4;
-                optionSelected = temperatureOffset;
-            }else if (menuOptions[optionSelected] == "alt"){
-                menuPage = 5;
-            }else if (menuOptions[optionSelected] =="cal"){
-                MFS.write("set");
-                delay(500);
-                MFS.write("co2");
-                delay(500);
-                MFS.write("cal");
-                delay(500);
-                menuPage = 6;
+    byte btn = MFS.getButton();    
+  
+    switch (btn){
+        case BUTTON_1_PRESSED:
+            // Menu Button  
+            if (!menuMode){
+                menuMode = true;
+                menuNeedsPrint = true;
             }
-        menuNeedsPrint = true;
-        }else if (menuMode && menuPage != 0){
-            if (menuPage == 1){
-                displayMode = optionSelected;
-            }else if (menuPage == 2){
-                beepMode = optionSelected;
-            }else if (menuPage == 3){
-                threshold = optionSelected * 250;
-            }else if (menuPage == 4){
-                temperatureOffset = optionSelected;
-                airSensor.setTemperatureOffset(temperatureOffset);        // Set temperature offset to compensate for self heating
-            }else if (menuPage == 5){
-                altValue = analogRead(POT_PIN)*altMulti;
-                airSensor.setAltitudeCompensation(analogRead(POT_PIN)*altMulti);
-            }else if (menuPage == 6){
-                // Start forced calibration routine
-                forcedCalibration(analogRead(POT_PIN), btn);
-            }            
-            resetMenu(false, -1);
+            if (menuMode){
+                switch(menuPage){
+                    case 0:
+                        optionSelected < menuOptionElements-1 ? optionSelected++ : optionSelected = 0;
+                        break;
+                    case 1:
+                        optionSelected < menuDispElements-1 ? optionSelected++ : optionSelected = 0;
+                        break;
+                    case 2:
+                        optionSelected < menuBeepElements-1 ? optionSelected++ : optionSelected = 0;
+                        break;
+                    case 3:
+                        optionSelected <= 11 ? optionSelected++ : optionSelected = 1;
+                        break;
+                    case 4:
+                        optionSelected < 15 ? optionSelected++ : optionSelected = 0;
+                        break;
+                    case 5:
+                        altMulti <= 10 ? altMulti++ : altMulti = 1;
+                        break;
+                    default:
+                        break;
+                }
+            menuNeedsPrint = true;
+            }
+            break;
+        case BUTTON_2_PRESSED:
+            // Back Button and exit from menu without saving
+            if (menuMode && menuPage!=0){
+                resetMenu(true, 0);
+            }else if (menuMode && menuPage==0){
+                resetMenu(false, -1);
+            }         
+            break;
+        case BUTTON_2_LONG_RELEASE:
+            // Reset to defaults Button
+            // use long release here because of non-perfect debouncing in LONG_PRESSED
+            eeprom_reset();
+            eeprom_load();
             loadScreen();
-        }
-    }
-    
-    // Save Button
-    // use long release here because of non-perfect debouncing in LONG_PRESSED
-    if (btn == BUTTON_3_LONG_RELEASE){
+            saveScreen();
+            break;
+        case BUTTON_3_LONG_RELEASE:
+            // Save Button
+            // use long release here because of non-perfect debouncing in LONG_PRESSED
             eeprom_update();
             loadScreen();
             saveScreen();
             resetMenu(false, -1);
+            break;
+        case BUTTON_3_PRESSED:
+            // Select and Apply Action
+            if (menuMode && menuPage == 0){
+                if (menuOptions[optionSelected] == "disp"){
+                    // select menuPage 1 and show current value
+                    menuPage = 1;
+                    optionSelected = displayMode;
+                }else if (menuOptions[optionSelected] == "beep"){
+                    // select menuPage 1 and show current value
+                    menuPage = 2;
+                    optionSelected = beepMode;
+                }else if (menuOptions[optionSelected] == "thre"){
+                    // select menuPage 1 and show current value
+                    menuPage = 3;
+                    optionSelected = threshold/250;
+                }else if (menuOptions[optionSelected] == "tc"){
+                    // select menuPage 1 and show current value
+                    menuPage = 4;
+                    optionSelected = temperatureOffset;
+                }else if (menuOptions[optionSelected] == "alt"){
+                    menuPage = 5;
+                }else if (menuOptions[optionSelected] =="cal"){
+                    MFS.write("set");
+                    delay(500);
+                    MFS.write("co2");
+                    delay(500);
+                    MFS.write("cal");
+                    delay(500);
+                    menuPage = 6;
+                }
+            menuNeedsPrint = true;
+            }else if (menuMode && menuPage != 0){
+                switch (menuPage){
+                    case 1:
+                        displayMode = optionSelected;
+                        break;
+                    case 2:
+                        beepMode = optionSelected;
+                        break;
+                    case 3:
+                        threshold = optionSelected * 250;
+                        break;
+                    case 4:
+                        temperatureOffset = optionSelected;
+                        // Set temperature offset to compensate for self heating
+                        airSensor.setTemperatureOffset(temperatureOffset);
+                        break;
+                    case 5:
+                        altValue = analogRead(POT_PIN)*altMulti;
+                        airSensor.setAltitudeCompensation(analogRead(POT_PIN)*altMulti);
+                        break;
+                    case 6:
+                        // Start forced calibration routine
+                        forcedCalibration(analogRead(POT_PIN), btn);
+                        break;
+                }          
+                resetMenu(false, -1);
+                loadScreen();
+            }
     }
 
-    // Reset to defaults Button
-    // use long release here because of non-perfect debouncing in LONG_PRESSED
-    if (btn == BUTTON_2_LONG_RELEASE){
-        eeprom_reset();
-        eeprom_load();
-        loadScreen();
-        saveScreen();
-    }
-
-    // Back Button and exit from menu without saving
-    if (btn == BUTTON_2_PRESSED && menuMode && menuPage!=0){
-        // reset optionSelected and menuPage
-        resetMenu(true, 0);
-    }else if (btn == BUTTON_2_PRESSED && menuMode && menuPage==0){
-        resetMenu(false, -1);
-    }
-    
+   
     // Print menuPage element to display
     static uint32_t timer;
     if (menuMode && menuNeedsPrint){
         timer = millis();
-        if (menuPage == 0){
-            MFS.write(menuOptions[optionSelected]);
-        }else if (menuPage == 1){
-            MFS.write(menuDisp[optionSelected]);
-        }else if (menuPage == 2){
-            MFS.write(menuBeep[optionSelected]);
-        }else if (menuPage == 3){
-            MFS.write(optionSelected*250);
-        }else if (menuPage == 4){
-            MFS.write(optionSelected);
-        }else if (menuPage == 5){
-            MFS.write(analogRead(POT_PIN)*altMulti);
-        }else if (menuPage == 6){
-            MFS.write(analogRead(POT_PIN));
+        switch (menuPage){
+            case 0:
+                MFS.write(menuOptions[optionSelected]);
+                break;
+            case 1:
+                MFS.write(menuOptions[optionSelected]);
+                break;
+            case 2:
+                MFS.write(menuOptions[optionSelected]);
+                break;
+            case 3:
+                MFS.write(optionSelected*250);
+                break;
+            case 4:
+                MFS.write(optionSelected);
+                break;
+            case 5:
+                MFS.write(analogRead(POT_PIN)*altMulti);
+                break;
+            case 6:
+                MFS.write(analogRead(POT_PIN));
+                break;
+            default:
+                break;
         }
         menuNeedsPrint = false;
         if ((menuPage == 5) || (menuPage == 6)){
@@ -298,7 +281,7 @@ void loop() {
         Serial.println((String)"Alarm activated: co2 value above threshold: " + co2Value + " > " + threshold);
         if (beepMode){
             MFS.beep();
-        }      
+        }   
     }else if (co2Value <= threshold && !menuMode && newReading){
         newReading = false;
         MFS.writeLeds(LED_ALL, OFF);
