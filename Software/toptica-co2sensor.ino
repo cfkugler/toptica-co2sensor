@@ -26,7 +26,6 @@ char          optionSelected = -1;
 byte          cycle = 0;
 byte          displayMode;                // Display mode
 bool          beepMode;                   // co2 beep alarm if over threshold
-bool          newReading;                 // only do actions if new sensor reading is ready
 byte          altMulti = 1;               // altitude multiplikator for scaling
 short         altValue;                   // altitude value
 
@@ -231,60 +230,56 @@ void loop() {
 
     // Display Modes
     if (airSensor.dataAvailable() && !menuMode) {
-            newReading = true;
-            switch(displayMode){
-                case 0:
-                    co2Value = airSensor.getCO2();
+        switch(displayMode){
+            case 0:
+                co2Value = airSensor.getCO2();
+                MFS.write(co2Value);
+                sendData(0);
+                break;
+            case 1:
+                tempValue = airSensor.getTemperature();
+                MFS.write(tempValue);
+                sendData(1);
+                break;
+            case 2:
+                humValue = airSensor.getHumidity();
+                MFS.write(humValue);
+                sendData(2);
+                break;
+            case 3:
+                // cycle time is given by measurement time
+                co2Value = airSensor.getCO2();
+                tempValue = airSensor.getTemperature();
+                humValue = airSensor.getHumidity();
+                if ((cycle % 3) == 0){
                     MFS.write(co2Value);
-                    sendData(0);
-                    break;
-                case 1:
-                    tempValue = airSensor.getTemperature();
+                    sendData(0); 
+                }else if ((cycle % 3) == 1){
                     MFS.write(tempValue);
                     sendData(1);
-                    break;
-                case 2:
-                    humValue = airSensor.getHumidity();
+                }else if ((cycle % 3) == 2){
                     MFS.write(humValue);
                     sendData(2);
-                    break;
-                case 3:
-                    // cycle time is given by measurement time
-                    co2Value = airSensor.getCO2();
-                    tempValue = airSensor.getTemperature();
-                    humValue = airSensor.getHumidity();
-                    if ((cycle % 3) == 0){
-                        MFS.write(co2Value);
-                        sendData(0); 
-                    }else if ((cycle % 3) == 1){
-                        MFS.write(tempValue);
-                        sendData(1);
-                    }else if ((cycle % 3) == 2){
-                        MFS.write(humValue);
-                        sendData(2);
-                    }
-                    cycle++;
-                    break;
-                default:
-                    break;        
-              }
-        }else{
-            delay(25);
+                }
+                cycle++;
+                break;
+            default:
+                break;        
         }
-    
-    // co2 alarm section
-    if(co2Value >= threshold && !menuMode && newReading){
-        newReading = false;
+        // co2 alarm section
+    if(co2Value >= threshold){
         MFS.writeLeds(LED_ALL, ON);
         MFS.blinkLeds(LED_ALL, ON);
         MFS.blinkDisplay(15, 1);
         if (beepMode){
             MFS.beep();
         }   
-    }else if (co2Value <= threshold && !menuMode && newReading){
-        newReading = false;
+    }else if (co2Value <= threshold){
         MFS.writeLeds(LED_ALL, OFF);
         MFS.blinkDisplay(15, 0);
+    }
+    }else{
+        delay(25);
     }
 }
 
