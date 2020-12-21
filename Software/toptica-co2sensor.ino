@@ -278,7 +278,6 @@ void loop() {
         MFS.writeLeds(LED_ALL, ON);
         MFS.blinkLeds(LED_ALL, ON);
         MFS.blinkDisplay(15, 1);
-        Serial.println((String)"Alarm activated: co2 value above threshold: " + co2Value + " > " + threshold);
         if (beepMode){
             MFS.beep();
         }   
@@ -341,7 +340,6 @@ void eeprom_check(){
     // Reset EEPROM to default configuration values + crc if crc mismatches 
     unsigned long crcTemp; 
     if (EEPROM.get(EEPROM.length()-4, crcTemp) != eeprom_crc()){
-        Serial.println("EEPROM not matching last saved crc value - setting defaults");
         // default settings can be changed as default crc is actively calculated
         eeprom_reset();
     }
@@ -361,7 +359,6 @@ void eeprom_update(void){
 
 void eeprom_reset(void){
     // resetting EEPROM to default configuration values + crc
-    Serial.println("Resetting EEPROM to defaults");
     MFS.blinkDisplay(15, 1);
     MFS.write("RST");
     delay(2000);
@@ -381,7 +378,6 @@ void forcedCalibration(short cal, byte btn){
     // uses analog read of MFS potentiometer to set co2 cal value
     // waits 3 minutes (blinks MFS 7 segment) and then forces calibration
    
-    Serial.println("Start sensor forced recalibration routine - 3 Minutes settling time");
     int i;
     for (i=0; i<1440; i++){
         // one cylce takes ~0125.s
@@ -391,21 +387,18 @@ void forcedCalibration(short cal, byte btn){
                 
         if (!digitalRead(A2) && menuMode){
         resetMenu(false, 0);
-        Serial.println("Sensor recalibration aborted");
         MFS.blinkDisplay(15, 0);
         return;
         }
     }
     // Force recalibration with chosen co2 cal value
     airSensor.setForcedRecalibrationFactor(cal);
-    Serial.println("Sensor forced recalibration done");
     MFS.blinkDisplay(15, 0);
 }
 
 
 void topticaSplash(void){
     // Write TOPTICA to MFS
-    Serial.println("TOPTICA CO2 Sensor Shield");
     MFS.beep();
     MFS.write("top");
     delay(1500);
