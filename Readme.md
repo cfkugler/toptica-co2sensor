@@ -15,9 +15,7 @@ Your TOPTICA team
 
 * See documentation [``menu_and_function_description.pdf``](./Software/documentation/menu_and_function_description.pdf)
 
-* Short video of functionality
-
-https://www.youtube.com/embed/F2p6WgKKBT8
+* Short video of functionality [TOPTICA CO2 Sensor Shield - with Menus](https://youtu.be/BYmPEdAIa4Q)
 
 * Have fun!
 
