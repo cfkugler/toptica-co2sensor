@@ -405,27 +405,32 @@ void forcedCalibration(int cal, byte btn){
    
     Serial.println("Start sensor forced recalibration routine - 3 Minutes settling time");
     int i;
-    bool abort = false;
+    int j;
     for (i=0; i<180; i++){
         // one MFS 7 segment Blinking takes ~1s
-        MFS.write("CAL");
-        delay(500);
-        MFS.write("");
-        delay(500);
-        if (!digitalRead(A2) && menuMode){
+        for (j=8; j<16; j++){
+            // poll button more often by using shorter delay times
+            if ((j % 8) < 4){
+                MFS.write("CAL");
+                delay(125);
+            }else if (((j % 8) < 8) && ((j % 8) >= 4)){
+                MFS.write("");
+                delay(125);
+            }
+            if (!digitalRead(A2) && menuMode){
             resetMenu(false, 0);
-            abort = true;
-            break;
+            Serial.println("Sensor recalibration aborted");
+            return;
+            }
+            if (j == 15){
+                j=8;
+            }
         }
-    }
-    if (!abort){
-        // Force recalibration with chosen co2 cal value
-        airSensor.setForcedRecalibrationFactor(cal);
-        Serial.println("Sensor forced recalibration done");
-    }else{
-        Serial.println("Sensor recalibration aborted");
-    }
 
+    }
+    // Force recalibration with chosen co2 cal value
+    airSensor.setForcedRecalibrationFactor(cal);
+    Serial.println("Sensor forced recalibration done");
 }
 
 
