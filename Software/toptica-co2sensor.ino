@@ -405,6 +405,7 @@ void forcedCalibration(short cal, byte btn){
     for (i=0; i<1440; i++){
         // one cylce takes ~0125.s
         MFS.write("CAL");
+        delay(125);
         MFS.blinkDisplay(15, 1);    
                 
         if (!digitalRead(A2) && menuMode){
