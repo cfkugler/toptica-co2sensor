@@ -227,9 +227,9 @@ void loop() {
         }else if (menuPage == 2){
             MFS.write(menuBeep[optionSelected]);
         }else if (menuPage == 3){
-            MFS.write(menuThre[optionSelected]);
+            MFS.write(menuGate*250);
         }else if (menuPage == 4){
-            MFS.write(menuTc[optionSelected]);
+            MFS.write(menuOffset);
         }else if (menuPage == 5){
             MFS.write(analogRead(POT_PIN)*altMulti);
         }else if (menuPage == 6){
