@@ -301,6 +301,7 @@ void loop() {
         newReading = false;
         MFS.writeLeds(LED_ALL, ON);
         MFS.blinkLeds(LED_ALL, ON);
+        MFS.blinkDisplay(15, 1);
         Serial.println((String)"Alarm activated: co2 value above threshold: " + co2Value + " > " + threshold);
         if (beepMode){
             MFS.beep();
@@ -308,6 +309,7 @@ void loop() {
     }else if (co2Value <= threshold && !menuMode && newReading){
         newReading = false;
         MFS.writeLeds(LED_ALL, OFF);
+        MFS.blinkDisplay(15, 0);
     }
 }
 
