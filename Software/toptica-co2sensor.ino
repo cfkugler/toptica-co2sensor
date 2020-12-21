@@ -236,32 +236,32 @@ void loop() {
                 case 0:
                     co2Value = airSensor.getCO2();
                     MFS.write(co2Value);
-                    Serial.println((String)"CO2(ppm): " + co2Value);
+                    sendData(0);
                     break;
                 case 1:
                     tempValue = airSensor.getTemperature();
                     MFS.write(tempValue);
-                    Serial.println((String)"Temperature (C): " + tempValue);
+                    sendData(1);
                     break;
                 case 2:
                     humValue = airSensor.getHumidity();
                     MFS.write(humValue);
-                    Serial.println((String)"rel. Humidity (%): " + humValue);
+                    sendData(2);
                     break;
                 case 3:
                     // cycle time is given by measurement time
                     co2Value = airSensor.getCO2();
                     tempValue = airSensor.getTemperature();
                     humValue = airSensor.getHumidity();
-                    Serial.println((String)"CO2 (ppm): " + co2Value);
-                    Serial.println((String)"Temperature (C): " + tempValue);
-                    Serial.println((String)"rel. Humidity (%): " + humValue);
                     if ((cycle % 3) == 0){
-                        MFS.write(co2Value); 
+                        MFS.write(co2Value);
+                        sendData(0); 
                     }else if ((cycle % 3) == 1){
                         MFS.write(tempValue);
+                        sendData(1);
                     }else if ((cycle % 3) == 2){
                         MFS.write(humValue);
+                        sendData(2);
                     }
                     cycle++;
                     break;
@@ -397,6 +397,24 @@ void forcedCalibration(short cal, byte btn){
 }
 
 
+void sendData(byte message){
+    // send correct message over serialport 0=CO2, 1=Temp 2=Humidity
+    switch (message){
+        case 0:
+            Serial.println((String)"CO2 (ppm): " + co2Value);
+            break;
+        case 1:
+            Serial.println((String)"Temperature (C): " + tempValue);
+            break;
+        case 2:
+            Serial.println((String)"rel. Humidity (%): " + humValue);
+            break;
+        default:
+            break;
+    }   
+}
+
+
 void topticaSplash(void){
     // Write TOPTICA to MFS
     MFS.beep();
@@ -416,6 +434,7 @@ void saveScreen(void){
     delay(2000);
     MFS.blinkDisplay(15, 0);
 }
+
 
 void loadScreen(void){
     MFS.write("o---");
