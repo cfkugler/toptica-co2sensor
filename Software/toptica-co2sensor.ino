@@ -8,7 +8,7 @@ SCD30         airSensor;                  // Object to interface with sensor
 short         co2Value = 0;               // Sensor read-out value CO2
 float         tempValue = 0.0;            // Sensor read-out value Temperature (C)
 float         humValue = 0.0;             // Sensor read-out value rel. Hum (%)
-short         threshold;                  // co2 Threshold value (menuGate)
+short         threshold;                  // co2 Threshold value
 byte          temperatureOffset;          // temperature offset of SCD30 sensor
 byte          displayMode;                // Display mode
 bool          beepMode;                   // co2 beep alarm if over threshold
@@ -21,8 +21,6 @@ short         altValue;                   // altitude value
 const char    * menuOptions[] = {"disp", "beep", "thre", "tc", "alt", "cal"};
 const char    * menuDisp[] = {"co2", "c", "hunn", "all"};
 const char    * menuBeep[] = {"off", "on"};
-byte          menuGate = 1;
-byte          menuOffset = 0;
 const int     menuOptionElements = 6;
 const int     menuDispElements = 4;
 const int     menuBeepElements = 2;
@@ -107,21 +105,21 @@ void loop() {
                 }
                 break;
             case 3:
-                if (menuGate <= 11){
+                if (optionSelected <= 11){
                     // select next menu item
-                    menuGate++;
+                    optionSelected++;
                 }else{
                     // end of menu array reached. go back to start
-                    menuGate = 1;
+                    optionSelected = 1;
                 }
                 break;
             case 4:
-                if (menuOffset < 15 ){
+                if (optionSelected < 15 ){
                     // select next menu item
-                    menuOffset++;
+                    optionSelected++;
                 }else{
                     // end of menu array reached. go back to start
-                    menuOffset = 0;
+                    optionSelected = 0;
                 }
                 break;
             case 5:
@@ -151,11 +149,11 @@ void loop() {
             }else if (menuOptions[optionSelected] == "thre"){
                 // select menuPage 1 and show current value
                 menuPage = 3;
-                menuGate = threshold/250;
+                optionSelected = threshold/250;
             }else if (menuOptions[optionSelected] == "tc"){
                 // select menuPage 1 and show current value
                 menuPage = 4;
-                menuOffset = temperatureOffset;
+                optionSelected = temperatureOffset;
             }else if (menuOptions[optionSelected] == "alt"){
                 menuPage = 5;
             }else if (menuOptions[optionSelected] =="cal"){
@@ -174,9 +172,9 @@ void loop() {
             }else if (menuPage == 2){
                 beepMode = optionSelected;
             }else if (menuPage == 3){
-                threshold = menuGate * 250;
+                threshold = optionSelected * 250;
             }else if (menuPage == 4){
-                temperatureOffset = menuOffset;
+                temperatureOffset = optionSelected;
                 airSensor.setTemperatureOffset(temperatureOffset);        // Set temperature offset to compensate for self heating
             }else if (menuPage == 5){
                 altValue = analogRead(POT_PIN)*altMulti;
@@ -227,9 +225,9 @@ void loop() {
         }else if (menuPage == 2){
             MFS.write(menuBeep[optionSelected]);
         }else if (menuPage == 3){
-            MFS.write(menuGate*250);
+            MFS.write(optionSelected*250);
         }else if (menuPage == 4){
-            MFS.write(menuOffset);
+            MFS.write(optionSelected);
         }else if (menuPage == 5){
             MFS.write(analogRead(POT_PIN)*altMulti);
         }else if (menuPage == 6){
