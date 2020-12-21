@@ -195,7 +195,7 @@ void loop() {
                 MFS.write(menuOptions[optionSelected]);
                 break;
             case 1:
-                MFS.write(menuOptions[optionSelected]);
+                MFS.write(menuDisp[optionSelected]);
                 break;
             case 2:
                 MFS.write(menuOptions[optionSelected]);
