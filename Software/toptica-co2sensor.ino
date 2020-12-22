@@ -3,21 +3,24 @@
 #include <Wire.h>
 #include <EEPROM.h>
 
+// Object to interface with sensor
+SCD30         airSensor;                  
 
-SCD30         airSensor;                  // Object to interface with sensor
-
-// variables and constants needed for menu
+// struct and constants needed for menu
 const char    * menuOptions[] = {"disp", "beep", "thre", "tc", "alt", "cal", "ser", "ser2"};
 const char    * menuDisp[] = {"co2", "c", "rH", "all"};
 const char    * menuBeep[] = {"off", "on"};
-const int     menuOptionElements = 8;
-const int     menuDispElements = 4;
-const int     menuBeepElements = 2;
-bool          menuMode = false;
-bool          menuNeedsPrint = false;
-byte          menuPage = 0;
-char          menuSelected = -1;
-byte          menuCycle = 0;
+
+struct MenuVariables {
+    int     OptionElements;
+    int     DispElements;
+    int     BeepElements;
+    bool    Mode;
+    bool    NeedsPrint;
+    byte    Page;
+    char    Selected;
+    byte    Cycle;
+}menu;
 
 struct MeasurementData {
     short   co2;
@@ -66,7 +69,16 @@ void setup() {
         // Check EEPROM against stored crc value, load default if needed and set variables
         eeprom_check();    
         eeprom_load();
-    }   
+    }
+
+    // initialize menu
+    menu.OptionElements = 8;
+    menu.DispElements = 4;
+    menu.BeepElements = 2;
+    menu.NeedsPrint = false;
+    menu.Page = 0;
+    menu.Selected = -1;
+    menu.Cycle = 0;   
 }
 
 
@@ -77,28 +89,28 @@ void loop() {
     switch (btn){
         case BUTTON_1_PRESSED:
             // Menu Button  
-            if (!menuMode){
-                menuMode = true;
-                menuNeedsPrint = true;
+            if (!menu.Mode){
+                menu.Mode = true;
+                menu.NeedsPrint = true;
             }
-            if (menuMode){
-                switch(menuPage){
+            if (menu.Mode){
+                switch(menu.Page){
                     case 0:
-                        menuSelected < menuOptionElements-1 ? menuSelected++ : menuSelected = 0;
+                        menu.Selected < menu.OptionElements-1 ? menu.Selected++ : menu.Selected = 0;
                         break;
                     case 1:
                     case 7:
-                        menuSelected < menuDispElements-1 ? menuSelected++ : menuSelected = 0;
+                        menu.Selected < menu.DispElements-1 ? menu.Selected++ : menu.Selected = 0;
                         break;
                     case 2:
                     case 8:
-                        menuSelected < menuBeepElements-1 ? menuSelected++ : menuSelected = 0;
+                        menu.Selected < menu.BeepElements-1 ? menu.Selected++ : menu.Selected = 0;
                         break;
                     case 3:
-                        menuSelected <= 11 ? menuSelected++ : menuSelected = 1;
+                        menu.Selected <= 11 ? menu.Selected++ : menu.Selected = 1;
                         break;
                     case 4:
-                        menuSelected < 15 ? menuSelected++ : menuSelected = 0;
+                        menu.Selected < 15 ? menu.Selected++ : menu.Selected = 0;
                         break;
                     case 5:
                         settings.altMulti <= 10 ? settings.altMulti++ : settings.altMulti = 1;
@@ -106,13 +118,13 @@ void loop() {
                     default:
                         break;
                 }
-            menuNeedsPrint = true;
+            menu.NeedsPrint = true;
             }
             break;
         case BUTTON_2_PRESSED:
             // Back Button and exit from menu without saving
-            if (menuMode){
-                menuPage == 0 ? resetMenu(false, -1) : resetMenu(true, 0);
+            if (menu.Mode){
+                menu.Page == 0 ? resetMenu(false, -1) : resetMenu(true, 0);
             }      
             break;
         case BUTTON_2_LONG_RELEASE:
@@ -133,54 +145,54 @@ void loop() {
             break;
         case BUTTON_3_PRESSED:
             // Select and Apply Action
-            if (menuMode && menuPage == 0){
-                if (menuOptions[menuSelected] == "disp"){
-                    // select menuPage 1 and show current value
-                    menuPage = 1;
-                    menuSelected = settings.displayMode;
-                }else if (menuOptions[menuSelected] == "beep"){
-                    // select menuPage 1 and show current value
-                    menuPage = 2;
-                    menuSelected = settings.beepMode;
-                }else if (menuOptions[menuSelected] == "thre"){
-                    // select menuPage 1 and show current value
-                    menuPage = 3;
-                    menuSelected = settings.threshold/250;
-                }else if (menuOptions[menuSelected] == "tc"){
-                    // select menuPage 1 and show current value
-                    menuPage = 4;
-                    menuSelected = settings.temperatureOffset;
-                }else if (menuOptions[menuSelected] == "alt"){
-                    menuPage = 5;
-                }else if (menuOptions[menuSelected] == "cal"){
+            if (menu.Mode && menu.Page == 0){
+                if (menuOptions[menu.Selected] == "disp"){
+                    // select menu.Page 1 and show current value
+                    menu.Page = 1;
+                    menu.Selected = settings.displayMode;
+                }else if (menuOptions[menu.Selected] == "beep"){
+                    // select menu.Page 1 and show current value
+                    menu.Page = 2;
+                    menu.Selected = settings.beepMode;
+                }else if (menuOptions[menu.Selected] == "thre"){
+                    // select menu.Page 1 and show current value
+                    menu.Page = 3;
+                    menu.Selected = settings.threshold/250;
+                }else if (menuOptions[menu.Selected] == "tc"){
+                    // select menu.Page 1 and show current value
+                    menu.Page = 4;
+                    menu.Selected = settings.temperatureOffset;
+                }else if (menuOptions[menu.Selected] == "alt"){
+                    menu.Page = 5;
+                }else if (menuOptions[menu.Selected] == "cal"){
                     MFS.write("set");
                     delay(500);
                     MFS.write("co2");
                     delay(500);
                     MFS.write("cal");
                     delay(500);
-                    menuPage = 6;
-                }else if (menuOptions[menuSelected] == "ser"){
-                    menuSelected = settings.serMode;
-                    menuPage = 7;
-                }else if (menuOptions[menuSelected] == "ser2"){
-                    menuSelected = settings.ser2Mode;
-                    menuPage = 8;
+                    menu.Page = 6;
+                }else if (menuOptions[menu.Selected] == "ser"){
+                    menu.Selected = settings.serMode;
+                    menu.Page = 7;
+                }else if (menuOptions[menu.Selected] == "ser2"){
+                    menu.Selected = settings.ser2Mode;
+                    menu.Page = 8;
                 }
-            menuNeedsPrint = true;
-            }else if (menuMode && menuPage != 0){
-                switch (menuPage){
+            menu.NeedsPrint = true;
+            }else if (menu.Mode && menu.Page != 0){
+                switch (menu.Page){
                     case 1:
-                        settings.displayMode = menuSelected;
+                        settings.displayMode = menu.Selected;
                         break;
                     case 2:
-                        settings.beepMode = menuSelected;
+                        settings.beepMode = menu.Selected;
                         break;
                     case 3:
-                        settings.threshold = menuSelected * 250;
+                        settings.threshold = menu.Selected * 250;
                         break;
                     case 4:
-                        settings.temperatureOffset = menuSelected;
+                        settings.temperatureOffset = menu.Selected;
                         // Set temperature offset to compensate for self heating
                         airSensor.setTemperatureOffset(settings.temperatureOffset);
                         break;
@@ -193,10 +205,10 @@ void loop() {
                         forcedCalibration(analogRead(POT_PIN), btn);
                         break;
                     case 7:
-                        settings.serMode = menuSelected;
+                        settings.serMode = menu.Selected;
                         break;
                     case 8:
-                        settings.ser2Mode = menuSelected;
+                        settings.ser2Mode = menu.Selected;
                         break;
                     default:
                         break;
@@ -207,27 +219,27 @@ void loop() {
     }
 
    
-    // Print menuPage element to display
+    // Print menu.Page element to display
     static uint32_t timer;
-    if (menuMode && menuNeedsPrint){
+    if (menu.Mode && menu.NeedsPrint){
         timer = millis();
-        switch (menuPage){
+        switch (menu.Page){
             case 0:
-                MFS.write(menuOptions[menuSelected]);
+                MFS.write(menuOptions[menu.Selected]);
                 break;
             case 1:
             case 7:
-                MFS.write(menuDisp[menuSelected]);
+                MFS.write(menuDisp[menu.Selected]);
                 break;
             case 2:
             case 8:
-                MFS.write(menuBeep[menuSelected]);
+                MFS.write(menuBeep[menu.Selected]);
                 break;
             case 3:
-                MFS.write(menuSelected*250);
+                MFS.write(menu.Selected*250);
                 break;
             case 4:
-                MFS.write(menuSelected);
+                MFS.write(menu.Selected);
                 break;
             case 5:
                 MFS.write(analogRead(POT_PIN)*settings.altMulti);
@@ -238,12 +250,12 @@ void loop() {
             default:
                 break;
         }
-        menuNeedsPrint = false;
-        if ((menuPage == 5) || (menuPage == 6)){
-            menuNeedsPrint = true;
+        menu.NeedsPrint = false;
+        if ((menu.Page == 5) || (menu.Page == 6)){
+            menu.NeedsPrint = true;
             delay(250);
         }
-    }else if (menuMode && !menuNeedsPrint){
+    }else if (menu.Mode && !menu.NeedsPrint){
         if ((millis() - timer) > 5000){
             resetMenu(false, -1);  
         }
@@ -252,7 +264,7 @@ void loop() {
 
 
     // Display Modes
-    if (airSensor.dataAvailable() && !menuMode) {
+    if (airSensor.dataAvailable() && !menu.Mode) {
         measurement.co2 = airSensor.getCO2();
         measurement.temp = airSensor.getTemperature();
         measurement.hum = airSensor.getHumidity();
@@ -268,14 +280,14 @@ void loop() {
                 break;
             case 3:
                 // cycle time is given by measurement time
-                if ((menuCycle % 3) == 0){
+                if ((menu.Cycle % 3) == 0){
                     MFS.write(measurement.co2);
-                }else if ((menuCycle % 3) == 1){
+                }else if ((menu.Cycle % 3) == 1){
                     MFS.write(measurement.temp);
-                }else if ((menuCycle % 3) == 2){
+                }else if ((menu.Cycle % 3) == 2){
                     MFS.write(measurement.hum);
                 }
-                menuCycle++;
+                menu.Cycle++;
                 break;
             default:
                 break;        
@@ -320,11 +332,11 @@ unsigned long eeprom_crc(void){
 
 
 void resetMenu(bool mMode, byte optSel){
-    // reset menuSelected, menuPage and deactivate menuMode
-    menuSelected = optSel;
-    menuNeedsPrint = true;
-    menuMode = mMode;
-    menuPage = 0;
+    // reset menu.Selected, menu.Page and deactivate menu.Mode
+    menu.Selected = optSel;
+    menu.NeedsPrint = true;
+    menu.Mode = mMode;
+    menu.Page = 0;
     MFS.write("----");
     delay(250);
 }
@@ -405,7 +417,7 @@ void forcedCalibration(short cal, byte btn){
         delay(125);
         MFS.blinkDisplay(15, 1);    
                 
-        if (!digitalRead(A2) && menuMode){
+        if (!digitalRead(A2) && menu.Mode){
             resetMenu(false, 0);
             MFS.blinkDisplay(15, 0);
             return;
