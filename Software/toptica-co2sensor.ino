@@ -264,15 +264,12 @@ void loop() {
         switch(displayMode){
             case 0:
                 MFS.write(co2Value);
-                sendData();
                 break;
             case 1:
                 MFS.write(tempValue);
-                sendData();
                 break;
             case 2:
                 MFS.write(humValue);
-                sendData();
                 break;
             case 3:
                 // cycle time is given by measurement time
