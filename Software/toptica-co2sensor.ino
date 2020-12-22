@@ -390,9 +390,13 @@ void forcedCalibration(short cal, byte btn){
     // waits 3 minutes (blinks MFS 7 segment) and then forces calibration
    
     int i;
+    int j = 180;
     for (i=0; i<1440; i++){
         // one cylce takes ~0125.s
-        MFS.write("CAL");
+        if (i % 8 == 0){
+            MFS.write(j);
+            j--;
+        }
         delay(125);
         MFS.blinkDisplay(15, 1);    
                 
@@ -402,6 +406,8 @@ void forcedCalibration(short cal, byte btn){
             return;
         }
     }
+    MFS.write("CAL");
+    delay(1000);
     // Force recalibration with chosen co2 cal value
     airSensor.setForcedRecalibrationFactor(cal);
     MFS.blinkDisplay(15, 0);
