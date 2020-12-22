@@ -211,9 +211,11 @@ void loop() {
                 MFS.write(menuOptions[optionSelected]);
                 break;
             case 1:
+            case 7:
                 MFS.write(menuDisp[optionSelected]);
                 break;
             case 2:
+            case 8:
                 MFS.write(menuBeep[optionSelected]);
                 break;
             case 3:
@@ -227,12 +229,6 @@ void loop() {
                 break;
             case 6:
                 MFS.write(analogRead(POT_PIN));
-                break;
-            case 7:
-                MFS.write(menuDisp[optionSelected]);
-                break;
-            case 8:
-                MFS.write(menuBeep[optionSelected]);
                 break;
             default:
                 break;
