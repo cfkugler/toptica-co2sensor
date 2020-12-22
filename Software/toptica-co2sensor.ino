@@ -5,9 +5,6 @@
 
 
 SCD30         airSensor;                  // Object to interface with sensor
-short         co2Value = 0;               // Sensor read-out value CO2
-float         tempValue = 0.0;            // Sensor read-out value Temperature (C)
-float         humValue = 0.0;             // Sensor read-out value rel. Hum (%)
 
 // variables and constants needed for menu
 const char    * menuOptions[] = {"disp", "beep", "thre", "tc", "alt", "cal", "ser", "ser2"};
@@ -21,6 +18,12 @@ bool          menuNeedsPrint = false;
 byte          menuPage = 0;
 char          menuSelected = -1;
 byte          menuCycle = 0;
+
+struct MeasurementData {
+    short   co2;
+    float   temp;
+    float   hum;
+} measurement;
 
 struct SettingValues {
    byte     altMulti;
@@ -250,27 +253,27 @@ void loop() {
 
     // Display Modes
     if (airSensor.dataAvailable() && !menuMode) {
-        co2Value = airSensor.getCO2();
-        tempValue = airSensor.getTemperature();
-        humValue = airSensor.getHumidity();
+        measurement.co2 = airSensor.getCO2();
+        measurement.temp = airSensor.getTemperature();
+        measurement.hum = airSensor.getHumidity();
         switch(settings.displayMode){
             case 0:
-                MFS.write(co2Value);
+                MFS.write(measurement.co2);
                 break;
             case 1:
-                MFS.write(tempValue);
+                MFS.write(measurement.temp);
                 break;
             case 2:
-                MFS.write(humValue);
+                MFS.write(measurement.hum);
                 break;
             case 3:
                 // cycle time is given by measurement time
                 if ((menuCycle % 3) == 0){
-                    MFS.write(co2Value);
+                    MFS.write(measurement.co2);
                 }else if ((menuCycle % 3) == 1){
-                    MFS.write(tempValue);
+                    MFS.write(measurement.temp);
                 }else if ((menuCycle % 3) == 2){
-                    MFS.write(humValue);
+                    MFS.write(measurement.hum);
                 }
                 menuCycle++;
                 break;
@@ -279,14 +282,14 @@ void loop() {
         }
         sendData();
         // co2 alarm section
-        if(co2Value >= settings.threshold){
+        if(measurement.co2 >= settings.threshold){
             MFS.writeLeds(LED_ALL, ON);
             MFS.blinkLeds(LED_ALL, ON);
             MFS.blinkDisplay(15, 1);
             if (settings.beepMode){
                 MFS.beep();
             }
-        }else if (co2Value <= settings.threshold){
+        }else if (measurement.co2 <= settings.threshold){
             MFS.writeLeds(LED_ALL, OFF);
             MFS.blinkDisplay(15, 0);
         }
@@ -420,18 +423,18 @@ void sendData(){
     // send correct message over serialport 0=CO2, 1=Temp 2=Humidity
     switch (settings.serMode){
         case 0:
-            settings.ser2Mode ? Serial.println((String)"CO2 (ppm): " + co2Value) : Serial.println(co2Value);
+            settings.ser2Mode ? Serial.println((String)"CO2 (ppm): " + measurement.co2) : Serial.println(measurement.co2);
             break;
         case 1:
-            settings.ser2Mode ? Serial.println((String)"Temperature (C): " + tempValue) : Serial.println(tempValue);
+            settings.ser2Mode ? Serial.println((String)"Temperature (C): " + measurement.temp) : Serial.println(measurement.temp);
             break;
         case 2:
-            settings.ser2Mode ? Serial.println((String)"rel. Humidity (%): " + humValue) : Serial.println(humValue);
+            settings.ser2Mode ? Serial.println((String)"rel. Humidity (%): " + measurement.hum) : Serial.println(measurement.hum);
             break;
         case 3:
-            settings.ser2Mode ? Serial.println((String)"CO2 (ppm): " + co2Value) : Serial.println(co2Value);
-            settings.ser2Mode ? Serial.println((String)"Temperature (C): " + tempValue) : Serial.println(tempValue);
-            settings.ser2Mode ? Serial.println((String)"rel. Humidity (%): " + humValue) : Serial.println(humValue);
+            settings.ser2Mode ? Serial.println((String)"CO2 (ppm): " + measurement.co2) : Serial.println(measurement.co2);
+            settings.ser2Mode ? Serial.println((String)"Temperature (C): " + measurement.temp) : Serial.println(measurement.temp);
+            settings.ser2Mode ? Serial.println((String)"rel. Humidity (%): " + measurement.hum) : Serial.println(measurement.hum);
             break;
         default:
             break;
