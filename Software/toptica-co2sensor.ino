@@ -8,9 +8,6 @@ SCD30         airSensor;                  // Object to interface with sensor
 short         co2Value = 0;               // Sensor read-out value CO2
 float         tempValue = 0.0;            // Sensor read-out value Temperature (C)
 float         humValue = 0.0;             // Sensor read-out value rel. Hum (%)
-short         threshold;                  // co2 Threshold value
-byte          temperatureOffset;          // temperature offset of SCD30 sensor
-
 
 // variables and constants needed for menu
 const char    * menuOptions[] = {"disp", "beep", "thre", "tc", "alt", "cal", "ser", "ser2"};
@@ -22,14 +19,19 @@ const int     menuBeepElements = 2;
 bool          menuMode = false;
 bool          menuNeedsPrint = false;
 byte          menuPage = 0;
-char          optionSelected = -1;
-byte          cycle = 0;
-byte          displayMode;                // Display mode
-bool          beepMode;                   // co2 beep alarm if over threshold
-byte          altMulti = 1;               // altitude multiplikator for scaling
-short         altValue;                   // altitude value
-short         serMode = 0;
-bool          ser2Mode = false;
+char          menuSelected = -1;
+byte          menuCycle = 0;
+
+struct SettingValues {
+   byte     altMulti;
+   short    altValue;
+   bool     beepMode;
+   byte     displayMode;
+   short    serMode;
+   bool     ser2Mode;
+   byte     temperatureOffset;
+   short    threshold;
+} settings;
 
 
 void setup() {
@@ -79,24 +81,24 @@ void loop() {
             if (menuMode){
                 switch(menuPage){
                     case 0:
-                        optionSelected < menuOptionElements-1 ? optionSelected++ : optionSelected = 0;
+                        menuSelected < menuOptionElements-1 ? menuSelected++ : menuSelected = 0;
                         break;
                     case 1:
                     case 7:
-                        optionSelected < menuDispElements-1 ? optionSelected++ : optionSelected = 0;
+                        menuSelected < menuDispElements-1 ? menuSelected++ : menuSelected = 0;
                         break;
                     case 2:
                     case 8:
-                        optionSelected < menuBeepElements-1 ? optionSelected++ : optionSelected = 0;
+                        menuSelected < menuBeepElements-1 ? menuSelected++ : menuSelected = 0;
                         break;
                     case 3:
-                        optionSelected <= 11 ? optionSelected++ : optionSelected = 1;
+                        menuSelected <= 11 ? menuSelected++ : menuSelected = 1;
                         break;
                     case 4:
-                        optionSelected < 15 ? optionSelected++ : optionSelected = 0;
+                        menuSelected < 15 ? menuSelected++ : menuSelected = 0;
                         break;
                     case 5:
-                        altMulti <= 10 ? altMulti++ : altMulti = 1;
+                        settings.altMulti <= 10 ? settings.altMulti++ : settings.altMulti = 1;
                         break;
                     default:
                         break;
@@ -129,25 +131,25 @@ void loop() {
         case BUTTON_3_PRESSED:
             // Select and Apply Action
             if (menuMode && menuPage == 0){
-                if (menuOptions[optionSelected] == "disp"){
+                if (menuOptions[menuSelected] == "disp"){
                     // select menuPage 1 and show current value
                     menuPage = 1;
-                    optionSelected = displayMode;
-                }else if (menuOptions[optionSelected] == "beep"){
+                    menuSelected = settings.displayMode;
+                }else if (menuOptions[menuSelected] == "beep"){
                     // select menuPage 1 and show current value
                     menuPage = 2;
-                    optionSelected = beepMode;
-                }else if (menuOptions[optionSelected] == "thre"){
+                    menuSelected = settings.beepMode;
+                }else if (menuOptions[menuSelected] == "thre"){
                     // select menuPage 1 and show current value
                     menuPage = 3;
-                    optionSelected = threshold/250;
-                }else if (menuOptions[optionSelected] == "tc"){
+                    menuSelected = settings.threshold/250;
+                }else if (menuOptions[menuSelected] == "tc"){
                     // select menuPage 1 and show current value
                     menuPage = 4;
-                    optionSelected = temperatureOffset;
-                }else if (menuOptions[optionSelected] == "alt"){
+                    menuSelected = settings.temperatureOffset;
+                }else if (menuOptions[menuSelected] == "alt"){
                     menuPage = 5;
-                }else if (menuOptions[optionSelected] == "cal"){
+                }else if (menuOptions[menuSelected] == "cal"){
                     MFS.write("set");
                     delay(500);
                     MFS.write("co2");
@@ -155,43 +157,43 @@ void loop() {
                     MFS.write("cal");
                     delay(500);
                     menuPage = 6;
-                }else if (menuOptions[optionSelected] == "ser"){
-                    optionSelected = serMode;
+                }else if (menuOptions[menuSelected] == "ser"){
+                    menuSelected = settings.serMode;
                     menuPage = 7;
-                }else if (menuOptions[optionSelected] == "ser2"){
-                    optionSelected = ser2Mode;
+                }else if (menuOptions[menuSelected] == "ser2"){
+                    menuSelected = settings.ser2Mode;
                     menuPage = 8;
                 }
             menuNeedsPrint = true;
             }else if (menuMode && menuPage != 0){
                 switch (menuPage){
                     case 1:
-                        displayMode = optionSelected;
+                        settings.displayMode = menuSelected;
                         break;
                     case 2:
-                        beepMode = optionSelected;
+                        settings.beepMode = menuSelected;
                         break;
                     case 3:
-                        threshold = optionSelected * 250;
+                        settings.threshold = menuSelected * 250;
                         break;
                     case 4:
-                        temperatureOffset = optionSelected;
+                        settings.temperatureOffset = menuSelected;
                         // Set temperature offset to compensate for self heating
-                        airSensor.setTemperatureOffset(temperatureOffset);
+                        airSensor.setTemperatureOffset(settings.temperatureOffset);
                         break;
                     case 5:
-                        altValue = analogRead(POT_PIN)*altMulti;
-                        airSensor.setAltitudeCompensation(analogRead(POT_PIN)*altMulti);
+                        settings.altValue = analogRead(POT_PIN)*settings.altMulti;
+                        airSensor.setAltitudeCompensation(analogRead(POT_PIN)*settings.altMulti);
                         break;
                     case 6:
                         // Start forced calibration routine
                         forcedCalibration(analogRead(POT_PIN), btn);
                         break;
                     case 7:
-                        serMode = optionSelected;
+                        settings.serMode = menuSelected;
                         break;
                     case 8:
-                        ser2Mode = optionSelected;
+                        settings.ser2Mode = menuSelected;
                         break;
                     default:
                         break;
@@ -208,24 +210,24 @@ void loop() {
         timer = millis();
         switch (menuPage){
             case 0:
-                MFS.write(menuOptions[optionSelected]);
+                MFS.write(menuOptions[menuSelected]);
                 break;
             case 1:
             case 7:
-                MFS.write(menuDisp[optionSelected]);
+                MFS.write(menuDisp[menuSelected]);
                 break;
             case 2:
             case 8:
-                MFS.write(menuBeep[optionSelected]);
+                MFS.write(menuBeep[menuSelected]);
                 break;
             case 3:
-                MFS.write(optionSelected*250);
+                MFS.write(menuSelected*250);
                 break;
             case 4:
-                MFS.write(optionSelected);
+                MFS.write(menuSelected);
                 break;
             case 5:
-                MFS.write(analogRead(POT_PIN)*altMulti);
+                MFS.write(analogRead(POT_PIN)*settings.altMulti);
                 break;
             case 6:
                 MFS.write(analogRead(POT_PIN));
@@ -251,7 +253,7 @@ void loop() {
         co2Value = airSensor.getCO2();
         tempValue = airSensor.getTemperature();
         humValue = airSensor.getHumidity();
-        switch(displayMode){
+        switch(settings.displayMode){
             case 0:
                 MFS.write(co2Value);
                 break;
@@ -263,28 +265,28 @@ void loop() {
                 break;
             case 3:
                 // cycle time is given by measurement time
-                if ((cycle % 3) == 0){
+                if ((menuCycle % 3) == 0){
                     MFS.write(co2Value);
-                }else if ((cycle % 3) == 1){
+                }else if ((menuCycle % 3) == 1){
                     MFS.write(tempValue);
-                }else if ((cycle % 3) == 2){
+                }else if ((menuCycle % 3) == 2){
                     MFS.write(humValue);
                 }
-                cycle++;
+                menuCycle++;
                 break;
             default:
                 break;        
         }
         sendData();
         // co2 alarm section
-        if(co2Value >= threshold){
+        if(co2Value >= settings.threshold){
             MFS.writeLeds(LED_ALL, ON);
             MFS.blinkLeds(LED_ALL, ON);
             MFS.blinkDisplay(15, 1);
-            if (beepMode){
+            if (settings.beepMode){
                 MFS.beep();
             }
-        }else if (co2Value <= threshold){
+        }else if (co2Value <= settings.threshold){
             MFS.writeLeds(LED_ALL, OFF);
             MFS.blinkDisplay(15, 0);
         }
@@ -315,8 +317,8 @@ unsigned long eeprom_crc(void){
 
 
 void resetMenu(bool mMode, byte optSel){
-    // reset optionSelected, menuPage and deactivate menuMode
-    optionSelected = optSel;
+    // reset menuSelected, menuPage and deactivate menuMode
+    menuSelected = optSel;
     menuNeedsPrint = true;
     menuMode = mMode;
     menuPage = 0;
@@ -327,18 +329,18 @@ void resetMenu(bool mMode, byte optSel){
 
 void eeprom_load(){
     // load stored EEPROM values
-    displayMode = EEPROM.read(0);
-    beepMode = EEPROM.read(1);
-    threshold = EEPROM.read(2) * 250;
-    temperatureOffset = EEPROM.read(3);
+    settings.displayMode = EEPROM.read(0);
+    settings.beepMode = EEPROM.read(1);
+    settings.threshold = EEPROM.read(2) * 250;
+    settings.temperatureOffset = EEPROM.read(3);
     // Set sensor temperature offset to compensate for self heating
-    airSensor.setTemperatureOffset(temperatureOffset);
-    altMulti = EEPROM.read(4);
-    serMode = EEPROM.read(5);
-    ser2Mode = EEPROM.read(6);
-    altValue = EEPROM.get(7, altValue);
+    airSensor.setTemperatureOffset(settings.temperatureOffset);
+    settings.altMulti = EEPROM.read(4);
+    settings.serMode = EEPROM.read(5);
+    settings.ser2Mode = EEPROM.read(6);
+    settings.altValue = EEPROM.get(7, settings.altValue);
     // Set sensor altitude compensation
-    airSensor.setAltitudeCompensation(altValue);
+    airSensor.setAltitudeCompensation(settings.altValue);
 }
 
 
@@ -355,14 +357,14 @@ void eeprom_check(){
 
 void eeprom_update(void){
     // update all configuration values + crc
-    EEPROM.update(0, displayMode);
-    EEPROM.update(1, beepMode);
-    EEPROM.update(2, threshold/250);
-    EEPROM.update(3, temperatureOffset);
-    EEPROM.update(4, altMulti);
-    EEPROM.update(5, serMode);
-    EEPROM.update(6, ser2Mode);
-    EEPROM.put(7, altValue);
+    EEPROM.update(0, settings.displayMode);
+    EEPROM.update(1, settings.beepMode);
+    EEPROM.update(2, settings.threshold/250);
+    EEPROM.update(3, settings.temperatureOffset);
+    EEPROM.update(4, settings.altMulti);
+    EEPROM.update(5, settings.serMode);
+    EEPROM.update(6, settings.ser2Mode);
+    EEPROM.put(7, settings.altValue);
     EEPROM.put(EEPROM.length()-4, eeprom_crc());
 }
 
@@ -416,20 +418,20 @@ void forcedCalibration(short cal, byte btn){
 
 void sendData(){
     // send correct message over serialport 0=CO2, 1=Temp 2=Humidity
-    switch (serMode){
+    switch (settings.serMode){
         case 0:
-            ser2Mode ? Serial.println((String)"CO2 (ppm): " + co2Value) : Serial.println(co2Value);
+            settings.ser2Mode ? Serial.println((String)"CO2 (ppm): " + co2Value) : Serial.println(co2Value);
             break;
         case 1:
-            ser2Mode ? Serial.println((String)"Temperature (C): " + tempValue) : Serial.println(tempValue);
+            settings.ser2Mode ? Serial.println((String)"Temperature (C): " + tempValue) : Serial.println(tempValue);
             break;
         case 2:
-            ser2Mode ? Serial.println((String)"rel. Humidity (%): " + humValue) : Serial.println(humValue);
+            settings.ser2Mode ? Serial.println((String)"rel. Humidity (%): " + humValue) : Serial.println(humValue);
             break;
         case 3:
-            ser2Mode ? Serial.println((String)"CO2 (ppm): " + co2Value) : Serial.println(co2Value);
-            ser2Mode ? Serial.println((String)"Temperature (C): " + tempValue) : Serial.println(tempValue);
-            ser2Mode ? Serial.println((String)"rel. Humidity (%): " + humValue) : Serial.println(humValue);
+            settings.ser2Mode ? Serial.println((String)"CO2 (ppm): " + co2Value) : Serial.println(co2Value);
+            settings.ser2Mode ? Serial.println((String)"Temperature (C): " + tempValue) : Serial.println(tempValue);
+            settings.ser2Mode ? Serial.println((String)"rel. Humidity (%): " + humValue) : Serial.println(humValue);
             break;
         default:
             break;
