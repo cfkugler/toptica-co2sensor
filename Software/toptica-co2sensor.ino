@@ -106,11 +106,9 @@ void loop() {
             break;
         case BUTTON_2_PRESSED:
             // Back Button and exit from menu without saving
-            if (menuMode && menuPage!=0){
-                resetMenu(true, 0);
-            }else if (menuMode && menuPage==0){
-                resetMenu(false, -1);
-            }         
+            if (menuMode){
+                menuPage == 0 ? resetMenu(false, -1) : resetMenu(true, 0);
+            }      
             break;
         case BUTTON_2_LONG_RELEASE:
             // Reset to defaults Button
