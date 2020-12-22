@@ -14,7 +14,7 @@ byte          temperatureOffset;          // temperature offset of SCD30 sensor
 
 // variables and constants needed for menu
 const char    * menuOptions[] = {"disp", "beep", "thre", "tc", "alt", "cal"};
-const char    * menuDisp[] = {"co2", "c", "toff", "all"};
+const char    * menuDisp[] = {"co2", "c", "rH", "all"};
 const char    * menuBeep[] = {"off", "on"};
 const int     menuOptionElements = 6;
 const int     menuDispElements = 4;
