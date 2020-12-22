@@ -13,10 +13,10 @@ byte          temperatureOffset;          // temperature offset of SCD30 sensor
 
 
 // variables and constants needed for menu
-const char    * menuOptions[] = {"disp", "beep", "thre", "tc", "alt", "cal"};
+const char    * menuOptions[] = {"disp", "beep", "thre", "tc", "alt", "cal", "ser", "ser2"};
 const char    * menuDisp[] = {"co2", "c", "rH", "all"};
 const char    * menuBeep[] = {"off", "on"};
-const int     menuOptionElements = 6;
+const int     menuOptionElements = 8;
 const int     menuDispElements = 4;
 const int     menuBeepElements = 2;
 bool          menuMode = false;
@@ -28,6 +28,8 @@ byte          displayMode;                // Display mode
 bool          beepMode;                   // co2 beep alarm if over threshold
 byte          altMulti = 1;               // altitude multiplikator for scaling
 short         altValue;                   // altitude value
+short         serMode = 0;
+bool          ser2Mode = false;
 
 
 void setup() {
@@ -94,6 +96,12 @@ void loop() {
                     case 5:
                         altMulti <= 10 ? altMulti++ : altMulti = 1;
                         break;
+                    case 7:
+                        optionSelected < menuDispElements-1 ? optionSelected++ : optionSelected = 0;
+                        break;
+                    case 8:
+                        optionSelected < menuBeepElements-1 ? optionSelected++ : optionSelected = 0;
+                        break;
                     default:
                         break;
                 }
@@ -145,7 +153,7 @@ void loop() {
                     optionSelected = temperatureOffset;
                 }else if (menuOptions[optionSelected] == "alt"){
                     menuPage = 5;
-                }else if (menuOptions[optionSelected] =="cal"){
+                }else if (menuOptions[optionSelected] == "cal"){
                     MFS.write("set");
                     delay(500);
                     MFS.write("co2");
@@ -153,6 +161,12 @@ void loop() {
                     MFS.write("cal");
                     delay(500);
                     menuPage = 6;
+                }else if (menuOptions[optionSelected] == "ser"){
+                    optionSelected = serMode;
+                    menuPage = 7;
+                }else if (menuOptions[optionSelected] == "ser2"){
+                    optionSelected = ser2Mode;
+                    menuPage = 8;
                 }
             menuNeedsPrint = true;
             }else if (menuMode && menuPage != 0){
@@ -178,6 +192,14 @@ void loop() {
                     case 6:
                         // Start forced calibration routine
                         forcedCalibration(analogRead(POT_PIN), btn);
+                        break;
+                    case 7:
+                        serMode = optionSelected;
+                        break;
+                    case 8:
+                        ser2Mode = optionSelected;
+                        break;
+                    default:
                         break;
                 }          
                 resetMenu(false, -1);
@@ -212,6 +234,12 @@ void loop() {
             case 6:
                 MFS.write(analogRead(POT_PIN));
                 break;
+            case 7:
+                MFS.write(menuDisp[optionSelected]);
+                break;
+            case 8:
+                MFS.write(menuBeep[optionSelected]);
+                break;
             default:
                 break;
         }
@@ -230,37 +258,32 @@ void loop() {
 
     // Display Modes
     if (airSensor.dataAvailable() && !menuMode) {
+        co2Value = airSensor.getCO2();
+        tempValue = airSensor.getTemperature();
+        humValue = airSensor.getHumidity();
         switch(displayMode){
             case 0:
-                co2Value = airSensor.getCO2();
                 MFS.write(co2Value);
-                sendData(0);
+                sendData();
                 break;
             case 1:
-                tempValue = airSensor.getTemperature();
                 MFS.write(tempValue);
-                sendData(1);
+                sendData();
                 break;
             case 2:
-                humValue = airSensor.getHumidity();
                 MFS.write(humValue);
-                sendData(2);
+                sendData();
                 break;
             case 3:
                 // cycle time is given by measurement time
-                co2Value = airSensor.getCO2();
-                tempValue = airSensor.getTemperature();
-                humValue = airSensor.getHumidity();
                 if ((cycle % 3) == 0){
                     MFS.write(co2Value);
-                    sendData(0); 
                 }else if ((cycle % 3) == 1){
                     MFS.write(tempValue);
-                    sendData(1);
                 }else if ((cycle % 3) == 2){
                     MFS.write(humValue);
-                    sendData(2);
                 }
+                sendData();
                 cycle++;
                 break;
             default:
@@ -294,8 +317,8 @@ unsigned long eeprom_crc(void){
     unsigned long crc = ~0L;
     
     // Calculate crc only from first X Bytes of EEPROM
-    // change the index value if more or less parameters shoudl be saved
-    for (int index = 0 ; index <= 6  ; ++index) {
+    // change the index value if more or less parameters should be saved
+    for (int index = 0 ; index <= 8  ; ++index) {
       crc = crc_table[(crc ^ EEPROM[index]) & 0x0f] ^ (crc >> 4);
       crc = crc_table[(crc ^ (EEPROM[index] >> 4)) & 0x0f] ^ (crc >> 4);
       crc = ~crc;
@@ -324,7 +347,9 @@ void eeprom_load(){
     // Set sensor temperature offset to compensate for self heating
     airSensor.setTemperatureOffset(temperatureOffset);
     altMulti = EEPROM.read(4);
-    altValue = EEPROM.get(5, altValue);
+    serMode = EEPROM.read(5);
+    ser2Mode = EEPROM.read(6);
+    altValue = EEPROM.get(7, altValue);
     // Set sensor altitude compensation
     airSensor.setAltitudeCompensation(altValue);
 }
@@ -348,7 +373,9 @@ void eeprom_update(void){
     EEPROM.update(2, threshold/250);
     EEPROM.update(3, temperatureOffset);
     EEPROM.update(4, altMulti);
-    EEPROM.put(5, altValue);
+    EEPROM.update(5, serMode);
+    EEPROM.update(6, ser2Mode);
+    EEPROM.put(7, altValue);
     EEPROM.put(EEPROM.length()-4, eeprom_crc());
 }
 
@@ -363,7 +390,9 @@ void eeprom_reset(void){
     EEPROM.update(2, 4);                                      // set co2 threshold to 1000 ppm
     EEPROM.update(3, 0);                                      // set temperature offset to 0
     EEPROM.update(4, 1);                                      // set altMulti to 1
-    EEPROM.put(5, 500);                                       // set altValue to 500
+    EEPROM.update(5, 0);                                      // set serial data to co2 value
+    EEPROM.update(6, 0);                                      // set serial data to only send value
+    EEPROM.put(7, 500);                                       // set altValue to 500
     EEPROM.put(EEPROM.length()-4, eeprom_crc());              // put default crc to EEPROM
 }
 
@@ -392,17 +421,22 @@ void forcedCalibration(short cal, byte btn){
 }
 
 
-void sendData(byte message){
+void sendData(){
     // send correct message over serialport 0=CO2, 1=Temp 2=Humidity
-    switch (message){
+    switch (serMode){
         case 0:
-            Serial.println((String)"CO2 (ppm): " + co2Value);
+            ser2Mode ? Serial.println((String)"CO2 (ppm): " + co2Value) : Serial.println(co2Value);
             break;
         case 1:
-            Serial.println((String)"Temperature (C): " + tempValue);
+            ser2Mode ? Serial.println((String)"Temperature (C): " + tempValue) : Serial.println(tempValue);
             break;
         case 2:
-            Serial.println((String)"rel. Humidity (%): " + humValue);
+            ser2Mode ? Serial.println((String)"rel. Humidity (%): " + humValue) : Serial.println(humValue);
+            break;
+        case 3:
+            ser2Mode ? Serial.println((String)"CO2 (ppm): " + co2Value) : Serial.println(co2Value);
+            ser2Mode ? Serial.println((String)"Temperature (C): " + tempValue) : Serial.println(tempValue);
+            ser2Mode ? Serial.println((String)"rel. Humidity (%): " + humValue) : Serial.println(humValue);
             break;
         default:
             break;
