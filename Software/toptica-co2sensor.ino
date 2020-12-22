@@ -82,9 +82,11 @@ void loop() {
                         optionSelected < menuOptionElements-1 ? optionSelected++ : optionSelected = 0;
                         break;
                     case 1:
+                    case 7:
                         optionSelected < menuDispElements-1 ? optionSelected++ : optionSelected = 0;
                         break;
                     case 2:
+                    case 8:
                         optionSelected < menuBeepElements-1 ? optionSelected++ : optionSelected = 0;
                         break;
                     case 3:
@@ -95,12 +97,6 @@ void loop() {
                         break;
                     case 5:
                         altMulti <= 10 ? altMulti++ : altMulti = 1;
-                        break;
-                    case 7:
-                        optionSelected < menuDispElements-1 ? optionSelected++ : optionSelected = 0;
-                        break;
-                    case 8:
-                        optionSelected < menuBeepElements-1 ? optionSelected++ : optionSelected = 0;
                         break;
                     default:
                         break;
