@@ -397,9 +397,9 @@ void forcedCalibration(short cal, byte btn){
         MFS.blinkDisplay(15, 1);    
                 
         if (!digitalRead(A2) && menuMode){
-        resetMenu(false, 0);
-        MFS.blinkDisplay(15, 0);
-        return;
+            resetMenu(false, 0);
+            MFS.blinkDisplay(15, 0);
+            return;
         }
     }
     // Force recalibration with chosen co2 cal value
