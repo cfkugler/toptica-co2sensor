@@ -280,24 +280,24 @@ void loop() {
                 }else if ((cycle % 3) == 2){
                     MFS.write(humValue);
                 }
-                sendData();
                 cycle++;
                 break;
             default:
                 break;        
         }
+        sendData();
         // co2 alarm section
-    if(co2Value >= threshold){
-        MFS.writeLeds(LED_ALL, ON);
-        MFS.blinkLeds(LED_ALL, ON);
-        MFS.blinkDisplay(15, 1);
-        if (beepMode){
-            MFS.beep();
-        }   
-    }else if (co2Value <= threshold){
-        MFS.writeLeds(LED_ALL, OFF);
-        MFS.blinkDisplay(15, 0);
-    }
+        if(co2Value >= threshold){
+            MFS.writeLeds(LED_ALL, ON);
+            MFS.blinkLeds(LED_ALL, ON);
+            MFS.blinkDisplay(15, 1);
+            if (beepMode){
+                MFS.beep();
+            }
+        }else if (co2Value <= threshold){
+            MFS.writeLeds(LED_ALL, OFF);
+            MFS.blinkDisplay(15, 0);
+        }
     }else{
         delay(25);
     }
