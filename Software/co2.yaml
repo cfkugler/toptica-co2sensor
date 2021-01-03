@@ -1,0 +1,59 @@
+esphome:
+  name: co2
+  platform: ESP8266
+  board: esp01_1m  
+  includes:
+    - uart_read_line_sensor.h
+
+wifi:
+  ssid: "XXX"
+  password: "XXX"
+  fast_connect: true
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Co2 Fallback Hotspot"
+    password: "GaBmkILXtJqO"
+
+captive_portal:
+
+# Enable Home Assistant API
+api:
+  password: "XXX"
+
+ota:
+  password: "XXX"
+
+logger:
+  level: VERBOSE #makes uart stream available in esphome logstream
+  baud_rate: 0 #disable logging over uart
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO1
+  rx_pin: GPIO3
+  baud_rate: 9600
+
+text_sensor:
+- platform: custom
+  lambda: |-
+    auto my_custom_sensor = new UartReadLineSensor(id(uart_bus));
+    App.register_component(my_custom_sensor);
+    return {my_custom_sensor};
+  text_sensors:
+    id: "uart_readline"
+  
+sensor:   
+- platform: template
+  name: "CO2 Sensor"
+  icon: "mdi:molecule-co2"
+  lambda: |-
+    float fbuffer = strtof(id(uart_readline).state.c_str(), NULL);
+    return fbuffer;
+  update_interval: 60s
+  accuracy_decimals: 0
+  unit_of_measurement: "ppm"
+
+- platform: wifi_signal
+  name: "CO2 WiFi Signal Sensor"
+  update_interval: 60s
