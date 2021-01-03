@@ -2,6 +2,7 @@
 #include <SparkFun_SCD30_Arduino_Library.h>
 #include <Wire.h>
 #include <EEPROM.h>
+#include <SoftwareSerial.h>
 
 // Object to interface with sensor
 SCD30         airSensor;                  
