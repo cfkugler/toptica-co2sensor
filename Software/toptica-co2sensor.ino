@@ -40,12 +40,22 @@ struct SettingValues {
    short    threshold;
 } settings;
 
+// Variables for ESP8266 Serial Communication
+byte rx_byte = 0;        // stores received byte
+SoftwareSerial ESP8266(5, 6); // RX, TX
 
 void setup() {
     // Setup serial port
     short baudrate = 9600;
     Serial.begin(baudrate);
    
+    // SofwareSerial for ESP8266 Communication
+    pinMode(5, INPUT);
+    pinMode(6, OUTPUT);
+
+    ESP8266.begin(9600);
+
+
     // Initialize Wire and MFS
     Wire.begin();    
     MFS.initialize();
