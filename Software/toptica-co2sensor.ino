@@ -303,6 +303,10 @@ void loop() {
             default:
                 break;        
         }
+        //if (ESP8266.available() > 0){
+        //    rx_byte = ESP8266.read();           // read byte from ESP8266 Serial  
+        //}
+        ESP8266.write(measurement.co2);
         sendData();
         // co2 alarm section
         if(measurement.co2 >= settings.threshold){
